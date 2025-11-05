@@ -40,18 +40,45 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.db.models import F
 from home.serializers import RowDataSerializer, TemproryDataSerializer
-from home.models import RowData, TemproryData, Device, Product
+from home.models import RowData, TemproryData, Device, Product, Report
 
 logger = logging.getLogger(__name__)
+
 
 
 
 class ReportMetadataView(APIView):
 
     def get(self, request):
-        gift_number = 2
-        report = request.query_params.get('re')
+        report_text = request.query_params.get('re')
         device_id = request.query_params.get('d')
+
+        if device_id is None or report_text is None:
+            return Response('Missing parameters', status=status.HTTP_400_BAD_REQUEST)
+
+        # بررسی Device
+        try:
+            device_id = int(device_id)
+            device = Device.objects.get(id=device_id)  # یا device_id=device_id
+        except ValueError:
+            return Response('device_id must be an integer', status=status.HTTP_400_BAD_REQUEST)
+        except Device.DoesNotExist:
+            return Response('Invalid device_id', status=status.HTTP_400_BAD_REQUEST)
+
+        # ثبت گزارش
+        report = Report.objects.create(report=report_text, device_id=device)
+
+        return Response({
+            'message': 'Report created successfully',
+            'report_id': report.id
+        }, status=status.HTTP_201_CREATED)
+
+
+
+
+
+
+
 
 
 class GetMetadataView(APIView):

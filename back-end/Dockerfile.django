@@ -1,0 +1,35 @@
+# FROM ${REPO_LOCATION}python/python:${BASE_VERSION} as base
+
+FROM docker.arvancloud.ir/python:3.12.3 AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /site
+COPY requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+
+# FROM ${REPO_LOCATION}python/python:${BASE_VERSION_slim}
+# FROM docker.arvancloud.ir/python:3.12.3-slim-buster
+FROM docker.arvancloud.ir/python:3.12.3-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /site
+
+RUN apt-get update && \
+    apt-get install -y libpq-dev && \
+    apt-get install -y unixodbc-dev
+
+COPY --from=base /opt/venv /opt/venv
+COPY back/ .
+ENV PATH="/opt/venv/bin:$PATH"
+
+# CMD gunicorn -c gunicorn.py A.wsgi:application
+CMD ["gunicorn", "-c", "gunicorn.py", "A.wsgi:application"]

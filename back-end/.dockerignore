@@ -1,0 +1,4 @@
+back/media
+back/static
+back/db.sqlite3
+back/.env_sample

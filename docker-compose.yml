@@ -1,0 +1,67 @@
+#compose file for create stack in use swarm
+# version: '3.8'
+services:
+
+  nginx-site:
+    hostname: nginx-site
+    image: nginx-site:1.0.0
+    # image: nginx:1.25.3
+    # build: ./Dockerfile.app
+    restart: always
+    # networks:
+    #   - test
+    # expose:
+    #   - 81
+    ports:
+      - 80:80
+      - 443:443
+      # - 4861:4861
+
+    networks:
+      - site
+    volumes:
+      - /storage/static/:/site/static/
+      - /storage/media/:/site/media/
+
+
+  site:
+    hostname: site
+    image: site:1.0.0
+    # build:
+    #   dockerfile: Dockerfile.django
+    restart: always
+    # networks:
+    #   - test
+    ports:
+      - 8081:8081
+    # expose:
+    #   - 8081
+    networks:
+      - site
+    volumes:
+      - /storage/static/:/site/static/
+      - /storage/media/:/site/media/
+      - /storage/db.sqlite3:/site/db.sqlite3
+
+
+  # redis:
+  #   hostname: redis
+  #   image: redis:v1.0.0
+  #   restart: always
+  #   # ports:
+  #   #   - 6379:6379
+  #   expose:
+  #     - 6379
+  #   networks:
+  #     - site
+  #   healthcheck:
+  #     test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+  #   volumes:
+  #     - redis_data:/data
+
+
+# volumes:
+#   redis_data:
+
+networks:
+  site:

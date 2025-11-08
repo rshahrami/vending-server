@@ -70,7 +70,7 @@ class ReportMetadataView(APIView):
 
         return Response({
             'message': 'Report created successfully',
-            'report_id': report.device_id
+            'report_id': report.id
         }, status=status.HTTP_201_CREATED)
 
 

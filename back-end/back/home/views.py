@@ -59,7 +59,7 @@ class ReportMetadataView(APIView):
         # بررسی Device
         try:
             device_id = int(device_id)
-            device = Device.objects.get(id=device_id)  # یا device_id=device_id
+            device = Device.objects.get(device_id=device_id)  # یا device_id=device_id
         except ValueError:
             return Response('device_id must be an integer', status=status.HTTP_400_BAD_REQUEST)
         except Device.DoesNotExist:
@@ -70,7 +70,7 @@ class ReportMetadataView(APIView):
 
         return Response({
             'message': 'Report created successfully',
-            'report_id': report.id
+            'report_id': report.device_id
         }, status=status.HTTP_201_CREATED)
 
 

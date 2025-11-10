@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 import pandas as pd
 from home.models import Product, Device, RowData, TemproryData, Report, ProtectedPhoneNumber
+from home.forms import DeviceForm
 import jdatetime
 from pytz import timezone
 import datetime
@@ -81,17 +82,24 @@ class ProductAdmin(admin.ModelAdmin):
     actions = [export_to_excel]
 
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ('device_id', 'device_name', 'deviceـphone_number', 'deviceـactivity')
-    list_filter = ('device_id', 'device_name', 'deviceـactivity')
-    search_fields = ('device_id', 'device_name', 'deviceـphone_number')
+    form = DeviceForm
+    list_display = ('device_id', 'display_name', 'device_phone_number', 'device_activity', 'device_token')
+    list_filter = ('device_id', 'device_name', 'device_activity')
+    search_fields = ('device_id', 'device_name', 'device_phone_number')
     actions = [export_to_excel]
 
 class RowDataAdmin(admin.ModelAdmin):
-    list_display = ('full_phone_number', 'device_id', 'product_id', 'jalali_datetime_created')
+    list_display = ('full_phone_number', 'device_display_name', 'product_id', 'jalali_datetime_created')
     list_filter = ('device_id', 'product_id', 'datetime_created')
     search_fields = ('phone_number', 'device_id__device_name', 'product_id__product_name')
     date_hierarchy = 'datetime_created'
     actions = [export_to_excel]
+
+    def device_display_name(self, obj):
+        if obj.device_id:
+            return obj.device_id.display_name  # از property Device استفاده می‌کنیم
+        return "-"
+    device_display_name.short_description = "نام دستگاه"
 
     def full_phone_number(self, obj):
         return '0' + str(obj.phone_number)
@@ -111,18 +119,27 @@ class TemproryDataAdmin(admin.ModelAdmin):
         return '0' + str(obj.phone_number)
     full_phone_number.short_description = 'شماره تلفن کامل'
 
+
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ['device_id', 'report', 'jalali_datetime']
+    list_display = ['device_display_name', 'report', 'jalali_datetime']
     list_filter = ['device_id', 'datetime']
     search_fields = ['report', 'device_id__device_name']
     readonly_fields = ['datetime']
     date_hierarchy = 'datetime'
     actions = [export_to_excel]
-    
+
+    def device_display_name(self, obj):
+        if obj.device_id:
+            return obj.device_id.display_name  # از property Device استفاده می‌کنیم
+        return "-"
+    device_display_name.short_description = "نام دستگاه"
+
     def jalali_datetime(self, obj):
         return convert_to_jalali(obj.datetime)
     jalali_datetime.short_description = 'تاریخ و زمان (شمسی)'
+
+
 
 @admin.register(ProtectedPhoneNumber)
 class ProtectedPhoneNumberAdmin(admin.ModelAdmin):

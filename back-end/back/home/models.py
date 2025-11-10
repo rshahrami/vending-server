@@ -8,6 +8,8 @@ Original file is located at
 """
 
 from django.db import models
+from rest_framework.authtoken.models import Token
+
 
 # Create your models here.
 
@@ -29,9 +31,12 @@ class Product(models.Model):
 
 class Device(models.Model):
     device_id = models.PositiveSmallIntegerField(unique=True, verbose_name='شناسه دستگاه')
+    # device_name = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='نام دستگاه')
     device_name = models.CharField(max_length=30, unique=True, verbose_name='نام دستگاه')
-    deviceـphone_number = models.PositiveBigIntegerField(null=True, blank=True, verbose_name='شماره تلفن دستگاه')
-    deviceـactivity = models.BooleanField(verbose_name='وضعیت دستگاه')
+    # device_name_per = models.CharField(max_length=30, unique=True, verbose_name='نام فارسی دستگاه')
+    device_phone_number = models.PositiveBigIntegerField(null=True, blank=True, verbose_name='شماره تلفن دستگاه')
+    device_token = models.OneToOneField(Token, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='توکن')
+    device_activity = models.BooleanField(verbose_name='وضعیت دستگاه')
     datetime_updated = models.DateTimeField(auto_now=True)
     datetime_created = models.DateTimeField(auto_now_add=True)
 
@@ -42,6 +47,14 @@ class Device(models.Model):
     def __str__(self):
         return self.device_name or "Untitled"
 
+    @property
+    def display_name(self):
+        """نمایش FirstName LastName برای Admin"""
+        if self.device_token and self.device_token.user:
+            return f"{self.device_token.user.first_name}"
+        return self.device_name
+    display_name.fget.short_description = "نام دستگاه"
+    
 
 class RowData(models.Model):
     phone_number = models.PositiveBigIntegerField(verbose_name='شماره تلفن') # example 09904574830 ----> 904574830
@@ -56,7 +69,7 @@ class RowData(models.Model):
 
     def __str__(self):
         return ('0' + str(self.phone_number)) or "Untitled"
-
+    
 
 class TemproryData(models.Model):
     phone_number = models.PositiveBigIntegerField(unique=True, verbose_name='شماره تلفن')
@@ -87,6 +100,7 @@ class Report(models.Model):
 
     def __str__(self):
         return f"گزارش {self.device_id}"
+
 
 
 class ProtectedPhoneNumber(models.Model):

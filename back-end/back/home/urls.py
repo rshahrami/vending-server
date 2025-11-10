@@ -22,5 +22,6 @@ urlpatterns = [
     path('get/', views.GetMetadataView.as_view(), name='get'),
     path('post/', views.PostMetadataView.as_view(), name='post'),
     path('re/', views.ReportMetadataView.as_view(), name='report'),
+    path('st/', views.DeviceStatusView.as_view(), name='device_status'),
 ]
 

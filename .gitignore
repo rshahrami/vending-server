@@ -1,3 +1,13 @@
+# Python
+*.pyc
+__pycache__/
+
+# Env
+*.ENV
+
+# Django
+*.log
 *media
 *static
 *db.sqlite3
+

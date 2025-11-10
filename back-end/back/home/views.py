@@ -4,6 +4,8 @@ import logging
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from django.db.models import F
 from home.serializers import RowDataSerializer, TemproryDataSerializer
 from home.models import RowData, TemproryData, Device, Product, Report
@@ -11,8 +13,35 @@ from home.models import RowData, TemproryData, Device, Product, Report
 logger = logging.getLogger(__name__)
 
 
+class DeviceStatusView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        device_id = request.query_params.get('d') 
+
+        if device_id is None:
+            # return Response('Missing parameters', status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            device_id = int(device_id)
+            device = Device.objects.get(device_id=device_id)  # یا device_id=device_id   
+        except Device.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND) 
+
+
+        if device.device_activity:
+            return Response(status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+
 
 class ReportMetadataView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         report_text = request.query_params.get('re')
@@ -45,6 +74,8 @@ class ReportMetadataView(APIView):
 
 
 class GetMetadataView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         phone_number = request.query_params.get('ph')
@@ -68,6 +99,8 @@ class GetMetadataView(APIView):
 
 
 class PostMetadataView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         gift_number = 2

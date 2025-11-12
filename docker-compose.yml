@@ -4,7 +4,7 @@ services:
 
   nginx-site:
     hostname: nginx-site
-    image: nginx-site:1.0.0
+    image: nginx-site:1.0.1
     # image: nginx:1.25.3
     # build: ./Dockerfile.app
     restart: always
@@ -16,17 +16,19 @@ services:
       - 80:80
       - 443:443
       # - 4861:4861
-
     networks:
+      - site
+    depends_on:
       - site
     volumes:
       - /storage/static/:/site/static/
       - /storage/media/:/site/media/
+      - /storage/log:/var/log/nginx
 
 
   site:
     hostname: site
-    image: site:1.0.0
+    image: site:1.0.1
     # build:
     #   dockerfile: Dockerfile.django
     restart: always

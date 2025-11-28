@@ -7,9 +7,11 @@ from rest_framework.response import Response
 from django.db.models import F
 from home.serializers import RowDataSerializer, TemproryDataSerializer
 from home.models import RowData, TemproryData, Device, Product, Report
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
+CACHE_KEY = "protected_phone_numbers"
 
 
 class ReportMetadataView(APIView):
@@ -52,6 +54,12 @@ class GetMetadataView(APIView):
             # return Response('phone_number is required', status=status.HTTP_400_BAD_REQUEST)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        # membership check از cache Redis
+        phone_cache = cache.get(CACHE_KEY, [])
+        if int(phone_number) in phone_cache:
+            return Response(status=status.HTTP_200_OK)
+
+
         try:
             record = TemproryData.objects.get(phone_number=phone_number)
             if record.gift_number == 0:
@@ -78,6 +86,11 @@ class PostMetadataView(APIView):
         if not phone_number:
             # return Response('phone_number is required', status=status.HTTP_400_BAD_REQUEST)
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # membership check از cache Redis
+        phone_cache = cache.get(CACHE_KEY, [])
+        if int(phone_number) in phone_cache:
+            return Response(status=status.HTTP_200_OK)
 
         # ��� phone_number ����� ? ���� ���
         if device_id is None and product_id is None:

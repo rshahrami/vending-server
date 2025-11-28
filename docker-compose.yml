@@ -46,24 +46,44 @@ services:
       - /storage/db.sqlite3:/site/db.sqlite3
 
 
-  # redis:
-  #   hostname: redis
-  #   image: redis:v1.0.0
-  #   restart: always
-  #   # ports:
-  #   #   - 6379:6379
-  #   expose:
-  #     - 6379
-  #   networks:
-  #     - site
-  #   healthcheck:
-  #     test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-  #   volumes:
-  #     - redis_data:/data
+  redis:
+    hostname: redis
+    image: redis:8.4.0
+    restart: always
+    # ports:
+    #   - 6379:6379
+    expose:
+      - 6379
+    networks:
+      - site
+    # healthcheck:
+    #   test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+    volumes:
+      - redis_data:/data
 
 
-# volumes:
-#   redis_data:
+  worker:
+    image: site:1.0.1
+    command: celery -A myproject worker -l info
+    restart: always
+
+  beat:
+    image: site:1.0.1
+    command: celery -A myproject beat -l info
+    restart: always
+
+
+
+
+volumes:
+  redis_data:
 
 networks:
   site:
